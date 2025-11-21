@@ -14,8 +14,6 @@ A C++ project that simulates printer firmware behavior for testing and CI/CD dem
 
 \- Unit tests with GoogleTest
 
-\- CI/CD pipeline with Jenkins
-
 
 
 \## Build \& Run
