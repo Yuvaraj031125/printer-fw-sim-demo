@@ -16,7 +16,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake g++ cppcheck libgtest-dev lcov
-          mkdir -p /usr/src/googletest/build
+          sudo mkdir -p /usr/src/googletest/build
           cd /usr/src/googletest/build
           cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release ..
           cmake --build . --config Release
