@@ -1,0 +1,49 @@
+name: Printer Firmware CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ cppcheck libgtest-dev lcov
+          cd /usr/src/gtest
+          sudo cmake .
+          sudo make
+          sudo mv libg* /usr/lib/
+
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_CXX_FLAGS="--coverage" ..
+          make
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Package artifact
+        run: |
+          cd build
+          tar -cvf printer.tar printer
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: printer-firmware
+          path: build/printer.tar
