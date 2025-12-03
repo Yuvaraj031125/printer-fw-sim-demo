@@ -6,11 +6,6 @@ pipeline {
         }
     }
     
-    triggers {
-        githubPush()
-        pollSCM('H/5 * * * *')
-    }
-    
     environment {
         BUILD_DIR = 'build'
         ARTIFACT_NAME = 'printer-fw-sim-demo.tar.gz'
@@ -66,7 +61,7 @@ pipeline {
         stage('Package Artifact') {
             steps {
                 sh '''
-                    tar -czf ${ARTIFACT_NAME} -C ${BUILD_DIR} printer-fw-sim
+                    tar -czf ${ARTIFACT_NAME} build/printer-fw-sim
                 '''
             }
         }
@@ -76,8 +71,8 @@ pipeline {
                 sh '''
                     cd ${BUILD_DIR}
                     lcov --capture --directory . --output-file coverage.info
-                    lcov --remove coverage.info '/usr/*' --output-file coverage_filtered.info
-                    genhtml coverage_filtered.info --output-directory coverage_report
+                    lcov --remove coverage.info '/usr/*' --output-file coverage.info
+                    genhtml coverage.info --output-directory coverage_report
                 '''
             }
         }
@@ -93,7 +88,7 @@ pipeline {
         always {
             publishTestResults testResultsPattern: '${BUILD_DIR}/test_results.xml'
             cleanWs()
-            echo 'Pipeline finished for printer-fw-sim-demo'
+            echo 'Pipeline finished'
         }
     }
 }
