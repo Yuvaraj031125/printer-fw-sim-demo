@@ -12,49 +12,34 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          # gtest sources are included by libgtest-dev but we won't build in /usr/src
-          sudo apt-get install -y cmake g++ cppcheck lcov ninja-build
-
-      # Build and install GoogleTest locally under the workspace
-      - name: Fetch and build GoogleTest (local prefix)
-        run: |
-          set -eux
-          GTEST_VERSION="v1.14.0"
-          # Fetch googletest into the workspace
-          git clone --depth 1 --branch "${GTEST_VERSION}" https://github.com/google/googletest.git third_party/googletest
-          # Configure & install into a local prefix
-          cmake -S third_party/googletest -B third_party/gbuild -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-                -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/third_party/ginstall"
-          cmake --build third_party/gbuild --target install
-
-      - name: Configure (out-of-source, coverage)
-        run: |
-          set -eux
-          rm -rf build
-          cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_CXX_FLAGS="--coverage" \
-                -DCMAKE_EXE_LINKER_FLAGS="--coverage" \
-                -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/third_party/ginstall"
+          sudo apt-get install -y cmake g++ cppcheck libgtest-dev lcov
+          sudo mkdir -p /usr/src/googletest/build
+          cd /usr/src/googletest/build
+          sudo cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release ..
+          sudo cmake --build . --config Release
+          sudo cp ./lib/libgtest*.a /usr/lib/
 
       - name: Build
         run: |
-          cmake --build build -- -j$(nproc)
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_CXX_FLAGS="--coverage" ..
+          make
 
       - name: Run tests
         run: |
-          ctest --test-dir build --output-on-failure
+          cd build
+          ctest --output-on-failure
 
       - name: Package artifact
         run: |
-          tar -cvf build/printer.tar -C build printer
+          cd build
+          tar -cvf printer.tar printer
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
