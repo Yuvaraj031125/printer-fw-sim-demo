@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Install dependencies
+      - name: Install C++ dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake g++ cppcheck lcov ninja-build
@@ -34,19 +34,18 @@ jobs:
                 -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/third_party/ginstall"
       
       - name: Build
-        run: cmake --build build -- -j$(nproc)
+        run: |
+          cmake --build build -- -j$(nproc)
       
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: |
+          ctest --test-dir build --output-on-failure
       
       - name: Package artifact
         run: |
-          if [ -f build/printer-fw-sim-demo ]; then
-            tar -cvf build/printer-fw-sim-demo.tar -C build printer-fw-sim-demo
-          fi
+          tar -cvf build/printer-fw-sim-demo.tar -C build printer-fw-sim-demo
       
       - name: Upload artifact
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: printer-fw-sim-demo
