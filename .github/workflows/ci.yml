@@ -13,8 +13,7 @@ jobs:
       
       - name: Install C++ dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake g++ cppcheck lcov ninja-build
+          sudo apt-get update && sudo apt-get install -y cmake g++ cppcheck lcov ninja-build
       
       - name: Setup GoogleTest
         run: |
@@ -44,7 +43,7 @@ jobs:
         run: |
           ctest --test-dir build --output-on-failure
       
-      - name: Install
+      - name: Install (optional)
         run: |
           cmake --build build --target install || echo "No install target"
       
@@ -78,5 +77,5 @@ jobs:
         if: env.TAR_PATH != ''
         uses: actions/upload-artifact@v4
         with:
-          name: printer-fw-sim-demo-${{ github.run_id }}
+          name: printer-fw-${{ github.run_id }}
           path: ${{ env.TAR_PATH }}
